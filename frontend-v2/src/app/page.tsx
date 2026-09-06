@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Suspense } from 'react';
 import { useAudioAnalyzer } from '@/hooks/useAudioAnalyzer';
 import { useAIEvents } from '@/hooks/useAIEvents';
 import { useAgoraSession } from '@/hooks/useAgoraSession';
@@ -16,7 +16,7 @@ import Link from 'next/link';
 
 const OrbScene = dynamic(() => import('@/components/ParticleOrb/OrbScene'), { ssr: false });
 
-export default function Home() {
+function HomeContent() {
   const searchParams = useSearchParams();
   const urlId = searchParams.get('id');
   
@@ -780,4 +780,8 @@ export default function Home() {
       </main>
     );
   }
+
+
+
+export default function Home() { return <Suspense fallback={<div>Loading...</div>}><HomeContent /></Suspense>; }
 
