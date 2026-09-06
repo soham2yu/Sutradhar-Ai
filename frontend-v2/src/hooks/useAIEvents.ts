@@ -33,6 +33,17 @@ export function useAIEvents(incidentId: string, isActive: boolean) {
       };
 
       wsRef.current = ws;
+
+      // Keep connection alive on Render (ping every 30s)
+      const pingInterval = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send("ping");
+        }
+      }, 30000);
+
+      ws.addEventListener("close", () => {
+        clearInterval(pingInterval);
+      });
     }
 
     return () => {
