@@ -102,6 +102,18 @@ export default function AIChatbox({ incidentId, aiResponse, showParticleText, on
             </div>
           ))
         )}
+        
+        {isSending && (
+          <div className="flex flex-col gap-1 items-start mb-2">
+            <div className="flex items-center gap-1.5 px-1">
+              <Bot className="w-3 h-3 text-blue-400 animate-pulse" />
+              <span className="text-[9px] uppercase tracking-wider text-white/40">Sutra</span>
+            </div>
+            <div className="px-3 py-2 rounded-xl text-xs max-w-[85%] bg-white/10 text-white/50 border border-white/5 rounded-bl-sm flex gap-1">
+              <span className="animate-bounce">.</span><span className="animate-bounce" style={{animationDelay: '0.2s'}}>.</span><span className="animate-bounce" style={{animationDelay: '0.4s'}}>.</span>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="p-2 border-t border-white/5 bg-black/40">

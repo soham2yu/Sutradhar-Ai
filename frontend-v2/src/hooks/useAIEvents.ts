@@ -6,6 +6,8 @@ export function useAIEvents(incidentId: string, isActive: boolean) {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
+    let reconnectTimer: NodeJS.Timeout;
+    
     if (!isActive) {
       if (wsRef.current) {
         wsRef.current.close();
@@ -14,7 +16,9 @@ export function useAIEvents(incidentId: string, isActive: boolean) {
       return;
     }
 
-    if (!wsRef.current) {
+    const connectWs = () => {
+      if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) return;
+
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
       const wsUrl = backendUrl.replace(/^http/, 'ws');
       const ws = new WebSocket(`${wsUrl}/api/ws/${incidentId}`);
@@ -25,7 +29,7 @@ export function useAIEvents(incidentId: string, isActive: boolean) {
           if (data.type === 'incident_update') {
             setState(data.incident);
           } else {
-            setState(data); // Fallback if it sends raw state
+            setState(data); // Fallback
           }
         } catch (e) {
           console.error("Failed to parse AI state from WS:", e);
@@ -41,13 +45,22 @@ export function useAIEvents(incidentId: string, isActive: boolean) {
         }
       }, 30000);
 
-      ws.addEventListener("close", () => {
+      ws.onclose = () => {
         clearInterval(pingInterval);
-      });
-    }
+        wsRef.current = null;
+        // Auto-reconnect if we are still supposed to be active
+        if (isActive) {
+          console.log("WebSocket dropped, reconnecting in 3s...");
+          reconnectTimer = setTimeout(connectWs, 3000);
+        }
+      };
+    };
+
+    connectWs();
 
     return () => {
-      // Don't close aggressively on every render, only when isActive becomes false
+      clearTimeout(reconnectTimer);
+      // Keep connection alive unless isActive turns false
     };
   }, [incidentId, isActive]);
 
