@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Sutradhar | Companion",
+  "version": "2.0.0",
+  "description": "Real-time conversation intelligence companion.",
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Sutradhar"
+  },
+  "permissions": [
+    "activeTab",
+    "storage",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost:8000/*",
+    "http://localhost:3002/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://meet.google.com/*",
+        "https://*.zoom.us/wc/*",
+        "https://teams.microsoft.com/*"
+      ],
+      "js": ["content.js"]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
