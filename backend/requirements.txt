@@ -12,3 +12,5 @@ python-multipart
 edge-tts
 agora_token_builder
 aiosqlite
+
+google-genai
