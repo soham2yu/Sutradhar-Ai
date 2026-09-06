@@ -72,7 +72,7 @@ class GeminiProvider(LLMProvider):
         if not api_key:
             raise ValueError("LLM_API_KEY environment variable is required")
 
-        self.model = os.getenv("LLM_MODEL", "gemini-1.5-flash")
+        self.model = os.getenv("LLM_MODEL", "gemini-3.6-flash")
 
         # Gemini supports OpenAI-compatible API
         self.client = AsyncOpenAI(
@@ -102,7 +102,7 @@ class GeminiProvider(LLMProvider):
 
 def _create_provider() -> LLMProvider:
     """Factory: create the appropriate LLM provider from environment config."""
-    provider_name = os.getenv("LLM_PROVIDER", "openai").lower()
+    provider_name = os.getenv("LLM_PROVIDER", "gemini").lower()
 
     providers = {
         "openai": OpenAIProvider,
