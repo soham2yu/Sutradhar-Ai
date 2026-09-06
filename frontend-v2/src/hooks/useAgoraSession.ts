@@ -50,6 +50,12 @@ export function useAgoraSession({ isActive, channelName, onSentenceComplete }: U
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ channel_name: channelName, uid })
         });
+        
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.detail || "Failed to fetch Agora token");
+        }
+        
         const data = await res.json();
         
         const AgoraRTC = (await import("agora-rtc-sdk-ng")).default;
