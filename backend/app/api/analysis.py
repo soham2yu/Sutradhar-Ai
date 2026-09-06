@@ -96,11 +96,15 @@ async def analyze_transcript(request: AnalyzeRequest) -> AnalyzeResponse:
 
     # Run AI analysis
     try:
-        transcript_dicts = [entry.model_dump() for entry in meaningful_entries]
-        analysis = await analyzer.analyze(transcript_dicts)
+        incident = incident_service.get_incident(request.incident_id)
+        transcript_dicts = [entry.model_dump() for entry in incident.transcript if entry.text not in ("joined the session", "left the session")]
         
-        # Merge analysis into incident state
-        incident = incident_service.merge_analysis(request.incident_id, analysis)
+        # Only analyze if we actually have meaningful history
+        if transcript_dicts:
+            analysis = await analyzer.analyze(transcript_dicts)
+            
+            # Merge analysis into incident state
+            incident = incident_service.merge_analysis(request.incident_id, analysis)
 
         # Broadcast updated AI state to all connected dashboard clients
         await ws_manager.broadcast_incident_state(request.incident_id)
