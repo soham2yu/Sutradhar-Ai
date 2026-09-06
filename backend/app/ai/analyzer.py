@@ -72,7 +72,7 @@ class GeminiProvider(LLMProvider):
         if not api_key:
             raise ValueError("LLM_API_KEY environment variable is required")
 
-        self.model = os.getenv("LLM_MODEL", "gemini-3.5-flash-lite")
+        self.model = os.getenv("LLM_MODEL", "gemini-3.6-flash")
         
         from google import genai
         self.client = genai.Client(api_key=api_key)
