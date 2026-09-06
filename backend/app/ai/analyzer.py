@@ -54,7 +54,7 @@ class OpenAIProvider(LLMProvider):
                 {"role": "user", "content": user_prompt},
             ],
             response_format={"type": "json_object"},
-            temperature=0.1,  # Low temperature for consistent, precise extraction
+            temperature=0,
         )
 
         content = response.choices[0].message.content
@@ -65,35 +65,34 @@ class OpenAIProvider(LLMProvider):
 
 
 class GeminiProvider(LLMProvider):
-    """Google Gemini provider using the OpenAI-compatible endpoint."""
+    """Google Gemini provider using the native google-genai SDK for maximum speed."""
 
     def __init__(self):
         api_key = os.getenv("LLM_API_KEY")
         if not api_key:
             raise ValueError("LLM_API_KEY environment variable is required")
 
-        self.model = os.getenv("LLM_MODEL", "gemini-3.6-flash")
-
-        # Gemini supports OpenAI-compatible API
-        self.client = AsyncOpenAI(
-            api_key=api_key,
-            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-        )
+        self.model = os.getenv("LLM_MODEL", "gemini-3.5-flash-lite")
+        
+        from google import genai
+        self.client = genai.Client(api_key=api_key)
 
     async def generate_json(self, system_prompt: str, user_prompt: str) -> dict:
         logger.info("Calling Gemini model=%s", self.model)
-
-        response = await self.client.chat.completions.create(
+        
+        from google.genai import types
+        
+        response = await self.client.aio.models.generate_content(
             model=self.model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.1,
+            contents=user_prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                temperature=0,
+                response_mime_type="application/json",
+            ),
         )
 
-        content = response.choices[0].message.content
+        content = response.text
         if not content:
             raise ValueError("LLM returned empty response")
 
@@ -138,20 +137,11 @@ class IncidentAnalyzer:
     async def analyze(self, transcript: list[dict]) -> IncidentAnalysis:
         """
         Analyze a transcript and return structured incident intelligence.
-
-        Args:
-            transcript: List of dicts with keys: speaker, timestamp, text
-
-        Returns:
-            Validated IncidentAnalysis with facts, hypotheses, conflicts, etc.
-
-        Raises:
-            ValueError: If the LLM output fails validation
         """
         user_prompt = build_analysis_prompt(transcript)
 
         # Call LLM with retry on validation failure
-        max_retries = 2
+        max_retries = 1
         last_error = None
 
         for attempt in range(max_retries + 1):
@@ -182,7 +172,6 @@ class IncidentAnalyzer:
                     max_retries + 1,
                     str(e),
                 )
-                # Reset provider to force re-init on next attempt if needed
                 continue
 
         raise ValueError(

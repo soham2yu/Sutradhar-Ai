@@ -635,7 +635,7 @@ function HomeContent() {
                     className="px-4 py-2 bg-blue-600/40 hover:bg-blue-600/80 rounded-full border border-blue-500/50 text-white/90 text-[10px] uppercase tracking-widest font-bold transition-all cursor-pointer z-50 backdrop-blur-md whitespace-nowrap"
                     title="Summon Agora Conversational AI Agent"
                   >
-                    {isAgoraAILoading ? 'Summoning...' : 'Summon Agora AI'}
+                    {isAgoraAILoading ? 'Summoning...' : ''}
                   </button>
                   <div className="w-px h-6 bg-white/10 mx-2" />
                   <button onClick={togglePause} className="p-3 bg-black/40 hover:bg-white/10 rounded-full border border-white/10 text-white/70 transition-all cursor-pointer z-50 backdrop-blur-md">
